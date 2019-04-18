@@ -9,8 +9,12 @@ print('here')
 
 while True:
     aps = nc.access_points
+    st = nc.stations
+    print(aps)
     for key in aps:
-        print(aps[key].bssid, aps[key].ssid, aps[key].channel)
-    time.sleep(0.5)
+        print('AP: ', aps[key].bssid, aps[key].ssid, aps[key].channel)
+    for key in st:
+        print('STATION: ', st[key].access_point, st[key].mac, st[key].probes)
+    # time.sleep(0.5)
 
 
