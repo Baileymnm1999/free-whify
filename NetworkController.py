@@ -1,16 +1,20 @@
 import os, subprocess
+from multiprocessing import Process
 from scapy.all import *
-from AccessPoint import *
+from AccessPoint import AccessPoint
 
 
 class NetworkController:
 
     def __init__(self):
         self.access_points = {}
-        self.stations = {}
+        self.interface = "wlp2s0"
 
     def start_scanning(self):
-        sniff(iface="wlp2s0", prn=self.handle_packet)
+        # Start the channel hopper
+        p = Process(target=self.channel_hopper)
+        p.start()
+        sniff(iface=self.interface, prn=self.handle_packet)
 
     def stop_scanning(self):
         pass
@@ -18,9 +22,19 @@ class NetworkController:
     def capture_handshake(self, access_point):
         pass
 
-    def handle_packet(self, packet):
+    def channel_hopper(self):
+        chans = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '36', '40',
+                 '44', '48', '52', '56', '60', '64', '100', '104', '108', '112', '116', '120',
+                 '124', '128', '132', '136', '140', '144', '149', '153', '161', '165', '169']
+        while True:
+            try:
+                for chan in chans:
+                    subprocess.call(['iwconfig', self.interface, 'chan', chan], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    time.sleep(0.5)
+            except KeyboardInterrupt:
+                break
 
-        print('here')
+    def handle_packet(self, packet):
         if packet.type == 0 and packet.subtype == 8:
             ssid = packet.getlayer(Dot11Beacon)[1].info
             ssid = ssid.decode('ASCII')
@@ -28,17 +42,6 @@ class NetworkController:
             bssid = packet.addr2
 
             if bssid not in self.access_points:
-                self.access_points[bssid] = AccessPoint(bssid, ssid, channel, 1)
-        #     else:
-        #         self.access_points[bssid].beacons += 1
-        #
-        # if packet.type == 0 and packet.subtype == 4:
-        #     # ssid = packet.getlayer(Dot11Beacon)[1].info
-        #     # ssid = ssid.decode('ASCII')
-        #     mac = packet.addr2
-        #
-        #     if mac not in self.stations:
-        #         self.access_points[mac] = Station(None, mac, [])
-        #
+                self.access_points[bssid] = AccessPoint(bssid, ssid, channel)
 
 
