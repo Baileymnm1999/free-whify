@@ -1,5 +1,3 @@
-
-
 class AccessPoint:
 
     def __init__(self, bssid, ssid, channel):
@@ -10,9 +8,9 @@ class AccessPoint:
 
 class Station:
 
-    def __init__(self, access_point, mac, probes):
+    def __init__(self, access_point, mac):
         self.access_point = access_point
         self.mac = mac
-        self.probes = probes
+        self.probes = 1
 
 
