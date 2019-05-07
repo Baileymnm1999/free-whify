@@ -72,7 +72,7 @@ class GUI:
     def on_deauth_btn(self):
         trgt = self.target.get()
         ap = self.networkController.stations[trgt].access_point
-        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap,)).start()
+        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, )).start()
 
 
     # scan for 'timeout' seconds
