@@ -2,10 +2,7 @@ from tkinter import *
 import tkinter.ttk as ttk
 from NetworkController import NetworkController
 from Devices import *
-import AttackAgent
-import time
-import threading
-import sys
+import AttackAgent, time, threading, sys, os
 
 
 class GUI:
@@ -41,6 +38,10 @@ class GUI:
         self.deauth_tab = Frame(self.notebook)
         self.deauth_tab.config(bg="#f5f5f5", padx=5, pady=5)
 
+        # create deauth tab to hold deauth attack
+        self.config_tab = Frame(self.notebook)
+        self.config_tab.config(bg="#f5f5f5", padx=5, pady=5)
+
         # create and attach deauth btn to deauth tab
         self.deauth_btn = Button(self.deauth_tab, text="Deauth", width=10, command=self.on_deauth_btn)
         self.deauth_btn.config(bg="#fff", activebackground="#800000")
@@ -50,7 +51,13 @@ class GUI:
         self.target = Entry(self.deauth_tab)
         self.target.grid(column=0, row=1)
 
-        # attach tabs to notebook        
+        self.devices_label = Label(self.config_tab, text="Choose wifi device")
+        self.devices_label.grid(column=0, row=0)
+        self.devices = ttk.Combobox(self.config_tab, values=os.listdir("/sys/class/net"))
+        self.devices.grid(column=0, row=1)
+
+        # attach tabs to notebook
+        self.notebook.add(self.config_tab, text="Config")
         self.notebook.add(self.deauth_tab, text="Deauth")
         self.notebook.grid(column=1 ,row=0, rowspan=2, sticky="NSWE")
 
@@ -59,6 +66,7 @@ class GUI:
 
     def on_scan_btn(self):
         self.scan_btn.config(text="Stop Scan", bg="#0f0", activebackground="#f00", command=self.on_stop_scan_btn)
+        self.networkController.interface = self.devices.get()
         threading.Thread(target=self.scan).start()
         threading.Thread(target=self.print_aps).start()
 
