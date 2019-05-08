@@ -12,7 +12,7 @@ class SniffError(Exception):
 
 class NetworkController:
 
-    def __init__(self, interface="wlp2s0"):
+    def __init__(self, interface=""):
         self.access_points = {}
         self.stations = {}
         self.interface = interface

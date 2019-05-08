@@ -38,9 +38,13 @@ class GUI:
         self.deauth_tab = Frame(self.notebook)
         self.deauth_tab.config(bg="#f5f5f5", padx=5, pady=5)
 
-        # create config tab to hold deauth attack
+        # create config tab to hold configs attack
         self.config_tab = Frame(self.notebook)
         self.config_tab.config(bg="#f5f5f5", padx=5, pady=5)
+
+        # create config tab to hold deauth attack
+        self.war_room_tab = Frame(self.notebook)
+        self.war_room_tab.config(bg="#f5f5f5", padx=5, pady=5)
 
         # create and attach deauth btn to deauth tab
         self.deauth_btn = Button(self.deauth_tab, text="Deauth Station", width=10, command=self.on_deauth_btn)
@@ -58,8 +62,6 @@ class GUI:
         self.deauth_spam = Checkbutton(self.deauth_tab, text="Continuous", variable=self.spam)
         self.deauth_spam.grid(column=1, row=2)
 
-
-
         # create and attach deauth btn to deauth tab
         self.deauth_btn_net = Button(self.deauth_tab, text="Deauth Network", width=10, command=self.on_deauth_btn_net)
         self.deauth_btn_net.config(bg="#fff", activebackground="#800000")
@@ -76,16 +78,18 @@ class GUI:
         self.deauth_spam_net = Checkbutton(self.deauth_tab, text="Continuous", variable=self.spam_net)
         self.deauth_spam_net.grid(column=1, row=6)
 
-
-
         self.devices_label = Label(self.config_tab, text="Choose wifi device")
         self.devices_label.grid(column=0, row=0)
         self.devices = ttk.Combobox(self.config_tab, values=os.listdir("/sys/class/net"))
         self.devices.grid(column=0, row=1)
 
+        self.nuke = Button(self.war_room_tab, text="Nuke", width=10, command=self.nuke)
+        self.nuke.grid(column=0, row=0)
+
         # attach tabs to notebook
         self.notebook.add(self.config_tab, text="Config")
         self.notebook.add(self.deauth_tab, text="Deauth")
+        self.notebook.add(self.war_room_tab, text="War Room")
         self.notebook.grid(column=1 ,row=0, rowspan=2, sticky="NSWE")
 
         self.window.mainloop()
@@ -105,22 +109,29 @@ class GUI:
 
 
     def on_deauth_btn(self):
+        self.networkController.interface = self.devices.get()
         trgt = self.target.get()
         ap = self.networkController.stations[trgt].access_point
         spam = False
         if self.spam.get() == 1:
             spam = True
-        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
+        threading.Thread(target=AttackAgent.deauth, args=(self.networkController.interface, trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
 
 
     def on_deauth_btn_net(self):
+        self.networkController.interface = self.devices.get()
         trgt = "FF:FF:FF:FF:FF:FF"
         ap = self.target_net.get()
         spam = False
         if self.spam_net.get() == 1:
             spam = True
-        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
-        
+        threading.Thread(target=AttackAgent.deauth, args=(self.networkController.interface, trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
+
+    def nuke(self):
+        self.networkController.interface = self.devices.get()
+        trgt = "FF:FF:FF:FF:FF:FF"
+        for ap in self.networkController.access_points:
+            threading.Thread(target=AttackAgent.deauth, args=(self.networkController.interface, trgt, ap, self.networkController.access_points[ap].channel, False, 100, )).start()
 
     # scan for 'timeout' seconds
     def scan(self):
