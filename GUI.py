@@ -38,18 +38,45 @@ class GUI:
         self.deauth_tab = Frame(self.notebook)
         self.deauth_tab.config(bg="#f5f5f5", padx=5, pady=5)
 
-        # create deauth tab to hold deauth attack
+        # create config tab to hold deauth attack
         self.config_tab = Frame(self.notebook)
         self.config_tab.config(bg="#f5f5f5", padx=5, pady=5)
 
         # create and attach deauth btn to deauth tab
-        self.deauth_btn = Button(self.deauth_tab, text="Deauth", width=10, command=self.on_deauth_btn)
+        self.deauth_btn = Button(self.deauth_tab, text="Deauth Station", width=10, command=self.on_deauth_btn)
         self.deauth_btn.config(bg="#fff", activebackground="#800000")
         self.deauth_btn.grid(column=0, row=0)
 
+        self.station_label = Label(self.deauth_tab, text="Target station")
+        self.station_label.grid(column=0, row=1)
+
         # create and attach deauth target entry widget
         self.target = Entry(self.deauth_tab)
-        self.target.grid(column=0, row=1)
+        self.target.grid(column=0, row=2)
+
+        self.spam = IntVar()
+        self.deauth_spam = Checkbutton(self.deauth_tab, text="Continuous", variable=self.spam)
+        self.deauth_spam.grid(column=1, row=2)
+
+
+
+        # create and attach deauth btn to deauth tab
+        self.deauth_btn_net = Button(self.deauth_tab, text="Deauth Network", width=10, command=self.on_deauth_btn_net)
+        self.deauth_btn_net.config(bg="#fff", activebackground="#800000")
+        self.deauth_btn_net.grid(column=0, row=4)
+
+        self.net_label = Label(self.deauth_tab, text="Target network")
+        self.net_label.grid(column=0, row=5)
+
+        # create and attach deauth target entry widget
+        self.target_net = Entry(self.deauth_tab)
+        self.target_net.grid(column=0, row=6)
+
+        self.spam_net = IntVar()
+        self.deauth_spam_net = Checkbutton(self.deauth_tab, text="Continuous", variable=self.spam_net)
+        self.deauth_spam_net.grid(column=1, row=6)
+
+
 
         self.devices_label = Label(self.config_tab, text="Choose wifi device")
         self.devices_label.grid(column=0, row=0)
@@ -80,8 +107,20 @@ class GUI:
     def on_deauth_btn(self):
         trgt = self.target.get()
         ap = self.networkController.stations[trgt].access_point
-        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, )).start()
+        spam = False
+        if self.spam.get() == 1:
+            spam = True
+        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
 
+
+    def on_deauth_btn_net(self):
+        trgt = "FF:FF:FF:FF:FF:FF"
+        ap = self.target_net.get()
+        spam = False
+        if self.spam_net.get() == 1:
+            spam = True
+        threading.Thread(target=AttackAgent.deauth, args=(trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
+        
 
     # scan for 'timeout' seconds
     def scan(self):
