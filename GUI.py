@@ -4,9 +4,8 @@ from NetworkController import NetworkController
 from Devices import *
 import AttackAgent, time, threading, sys, os
 
-
 class GUI:
-
+        
     def __init__(self, window, networkController):
         self.window = window
         self.networkController = networkController
@@ -127,11 +126,12 @@ class GUI:
             spam = True
         threading.Thread(target=AttackAgent.deauth, args=(self.networkController.interface, trgt, ap, self.networkController.access_points[ap].channel, spam, )).start()
 
+
     def nuke(self):
         self.networkController.interface = self.devices.get()
         trgt = "FF:FF:FF:FF:FF:FF"
-        for ap in self.networkController.access_points:
-            threading.Thread(target=AttackAgent.deauth, args=(self.networkController.interface, trgt, ap, self.networkController.access_points[ap].channel, False, 100, )).start()
+        threading.Thread(target=AttackAgent.nuke, args=(self.networkController.interface, self.networkController.access_points, 1000,  )).start()
+
 
     # scan for 'timeout' seconds
     def scan(self):

@@ -35,8 +35,69 @@ class NetworkController:
         self.sniffing = False
 
 
-    def capture_handshake(self, access_point):
-        pass
+    def capture_handshake(self, bssid, channel, waittime, que):
+
+        to_frames = []
+        from_frames = []
+        clients = []
+        setInterfaceChannel(self.interface, channel)
+        global captured_handshake
+        captured_handshake = False
+
+        def checkForWPAHandshake(p):
+                
+            if EAPOL in p:
+
+                DS = p.FCfield & DS_FLAG
+                to_ds = p.FCfield & TO_DS != 0
+
+                if to_ds: 
+                    client = p.addr2
+                else:
+                    client = p.addr1
+
+                if client not in clients:
+                    clients.append(client)
+                    to_frames.append(0)
+                    from_frames.append(0)
+                    
+
+                idx = clients.index(client)
+                if to_ds:
+                    to_frames[idx] = to_frames[idx] + 1
+                else:
+                    from_frames[idx] = from_frames[idx] + 1
+
+                # See if we captured 4 way handshake
+                if (to_frames[idx] >= 2) and (from_frames[idx] >=2):
+                    global captured_handshake 
+                    captured_handshake = True
+                    return True
+
+                return False
+                
+            else:
+                return False
+
+        def __sniff(filter, stop_filter, timeout):
+
+            try:
+                cap = sniff(iface=self.interface, filter=f, stop_filter=checkForWPAHandshake, timeout=timeout)
+                return cap
+            except KeyboardInterrupt:
+                sys.exit()
+            except:
+                sys.stdout.write("\n[*] WPA scan failed trying again")
+                time.sleep(1)
+                __sniff(filter, stop_filter, timeout)
+
+        f = "ether host " + bssid
+        cap = __sniff(f, checkForWPAHandshake, waittime)
+        que.put(captured_handshake)
+        if captured_handshake:
+            que.put(cap)
+        else:
+            del cap
 
 
     def channel_hopper(self):
