@@ -1,0 +1,17 @@
+Jacob Petrisko, Jake Zimmerman, Bailey Morgan
+
+Wifi-stuf README
+
+Python code with use of Scapy and Tkinter libraries.
+Will only work on Linux distributions with a wifi card that can support
+monitor mode.
+
+test.py holds the main method.
+
+Execute using python 3 and sudo privileges after setting your wifi card
+to monitor mode:
+
+sudo python3 test.py
+
+Repository Link:  https://github.com/Baileymnm1999/free-whify.git
+The code base is attached in a zip file.
